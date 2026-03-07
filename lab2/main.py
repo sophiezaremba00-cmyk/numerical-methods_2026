@@ -1,233 +1,90 @@
-import csv
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-# -------------------------------
-# 1. Зчитування даних з CSV
-# -------------------------------
-def read_csv(filename):
-    x = []
-    y = []
+# -------------------------
+# Вхідні дані (варіант 5)
+# -------------------------
 
-    with open(filename, 'r') as file:
-        reader = csv.DictReader(file)
-
-        for row in reader:
-            x.append(float(row['Month']))
-            y.append(float(row['Temp']))
-
-    return np.array(x), np.array(y)
+objects = [100, 200, 400, 800, 1600]
+fps = [120, 110, 90, 65, 40]
 
 
-# -------------------------------
-# 2. Формування матриці A
-# -------------------------------
-def form_matrix(x, m):
+# -------------------------
+# Таблиця розділених різниць
+# -------------------------
 
-    n = len(x)
-    A = np.zeros((m+1, m+1))
+def divided_differences(x, y):
 
-    for i in range(m+1):
-        for j in range(m+1):
-            s = 0
-            for k in range(n):
-                s += x[k]**(i+j)
-            A[i][j] = s
+    n = len(y)
+    coef = y.copy()
 
-    return A
+    for j in range(1, n):
+        for i in range(n - 1, j - 1, -1):
+            coef[i] = (coef[i] - coef[i - 1]) / (x[i] - x[i - j])
+
+    return coef
 
 
-# -------------------------------
-# Формування вектора b
-# -------------------------------
-def form_vector(x, y, m):
+# -------------------------
+# Поліном Ньютона
+# -------------------------
 
-    n = len(x)
-    b = np.zeros(m+1)
+def newton_polynomial(x_data, coef, x):
 
-    for i in range(m+1):
-        s = 0
-        for k in range(n):
-            s += y[k] * x[k]**i
-        b[i] = s
+    n = len(coef) - 1
+    result = coef[n]
 
-    return b
+    for k in range(1, n + 1):
+        result = coef[n - k] + (x - x_data[n - k]) * result
+
+    return result
 
 
-# -------------------------------
-# Метод Гауса з вибором головного
-# елемента по стовпцю
-# -------------------------------
-def gauss_solve(A, b):
+# -------------------------
+# Основна частина
+# -------------------------
 
-    n = len(b)
+coef = divided_differences(objects, fps)
 
-    for k in range(n):
+# прогноз FPS для 1000 об'єктів
+fps_1000 = newton_polynomial(objects, coef, 1000)
 
-        # пошук максимального елемента
-        max_row = k
-        for i in range(k+1, n):
-            if abs(A[i][k]) > abs(A[max_row][k]):
-                max_row = i
-
-        # перестановка рядків
-        A[[k, max_row]] = A[[max_row, k]]
-        b[k], b[max_row] = b[max_row], b[k]
-
-        # прямий хід
-        for i in range(k+1, n):
-
-            factor = A[i][k] / A[k][k]
-
-            for j in range(k, n):
-                A[i][j] -= factor * A[k][j]
-
-            b[i] -= factor * b[k]
-
-    # зворотній хід
-    x = np.zeros(n)
-
-    for i in range(n-1, -1, -1):
-
-        s = 0
-        for j in range(i+1, n):
-            s += A[i][j] * x[j]
-
-        x[i] = (b[i] - s) / A[i][i]
-
-    return x
+print("FPS для 1000 об'єктів =", fps_1000)
 
 
-# -------------------------------
-# Обчислення полінома
-# -------------------------------
-def polynomial(x, coef):
+# -------------------------
+# пошук межі FPS >= 60
+# -------------------------
 
-    y = np.zeros_like(x, dtype=float)
+limit = None
 
-    for i in range(len(coef)):
-        y += coef[i] * x**i
+for obj in range(100, 1600):
 
-    return y
+    value = newton_polynomial(objects, coef, obj)
 
+    if value < 60:
+        limit = obj
+        break
 
-# -------------------------------
-# Дисперсія
-# -------------------------------
-def variance(y_true, y_approx):
-    return np.mean((y_true - y_approx)**2)
+print("FPS падає нижче 60 приблизно при:", limit, "об'єктах")
 
 
-# -------------------------------
-# Основна програма
-# -------------------------------
+# -------------------------
+# Побудова графіка
+# -------------------------
 
-x = np.array([
-1,2,3,4,5,6,7,8,9,10,11,12,
-13,14,15,16,17,18,19,20,21,22,23,24
-])
+x_vals = np.linspace(100, 1600, 200)
+y_vals = [newton_polynomial(objects, coef, x) for x in x_vals]
 
-y = np.array([
--2,0,5,10,15,20,23,22,17,10,5,0,
--10,3,7,13,19,20,22,21,18,15,10,3
-])
+plt.scatter(objects, fps, label="Експериментальні дані")
+plt.plot(x_vals, y_vals, label="Інтерполяційний поліном Ньютона")
 
-max_degree = 4
+plt.xlabel("Objects")
+plt.ylabel("FPS")
+plt.title("Залежність FPS від кількості об'єктів")
 
-variances = []
-coefs = []
-
-for m in range(1, max_degree+1):
-
-    A = form_matrix(x, m)
-    b = form_vector(x, y, m)
-
-    coef = gauss_solve(A.copy(), b.copy())
-
-    y_approx = polynomial(x, coef)
-
-    var = variance(y, y_approx)
-
-    variances.append(var)
-    coefs.append(coef)
-
-    print(f"Степінь {m} -> дисперсія = {var:.4f}")
-
-# оптимальний степінь
-optimal_m = np.argmin(variances) + 1
-
-print("\nОптимальний степінь полінома:", optimal_m)
-
-coef = coefs[optimal_m-1]
-
-
-# -------------------------------
-# Апроксимація
-# -------------------------------
-y_approx = polynomial(x, coef)
-
-
-# -------------------------------
-# Прогноз на 3 місяці
-# -------------------------------
-x_future = np.array([25, 26, 27])
-y_future = polynomial(x_future, coef)
-
-print("\nПрогноз температур:")
-for i in range(3):
-    print(f"Місяць {x_future[i]} -> {y_future[i]:.2f} °C")
-
-
-# -------------------------------
-# Похибка
-# -------------------------------
-error = y - y_approx
-
-
-# -------------------------------
-# Графік даних і апроксимації
-# -------------------------------
-plt.figure()
-
-plt.scatter(x, y, label="Фактичні дані")
-plt.plot(x, y_approx, label="Апроксимація")
-
-plt.xlabel("Місяць")
-plt.ylabel("Температура")
 plt.legend()
-plt.title("Апроксимація температур")
-
-plt.show()
-
-
-# -------------------------------
-# Графік похибки
-# -------------------------------
-plt.figure()
-
-plt.plot(x, error, marker='o')
-
-plt.xlabel("Місяць")
-plt.ylabel("Похибка")
-
-plt.title("Похибка апроксимації")
-
-plt.show()
-
-
-# -------------------------------
-# Графік дисперсії
-# -------------------------------
-plt.figure()
-
-degrees = range(1, max_degree+1)
-
-plt.plot(degrees, variances, marker='o')
-
-plt.xlabel("Степінь полінома")
-plt.ylabel("Дисперсія")
-
-plt.title("Залежність дисперсії від степеня")
+plt.grid()
 
 plt.show()
