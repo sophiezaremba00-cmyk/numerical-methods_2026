@@ -81,6 +81,12 @@ def cubic_spline(x, y):
 
 a, b, c, d = cubic_spline(distances, elevations)
 
+def spline_value(x_val, x, a, b, c, d):
+    for i in range(len(a)):
+        if x[i] <= x_val <= x[i+1]:
+            dx = x_val - x[i]
+            return a[i] + b[i]*dx + c[i]*dx**2 + d[i]*dx**3
+
 xx = np.linspace(distances[0], distances[-1], 1000)
 yy = np.zeros_like(xx)
 
@@ -88,6 +94,9 @@ for i in range(len(a)):
     mask = (xx >= distances[i]) & (xx <= distances[i+1])
     dx = xx[mask] - distances[i]
     yy[mask] = a[i] + b[i]*dx + c[i]*dx**2 + d[i]*dx**3
+
+    spline_points = np.array([spline_value(xi, distances, a, b, c, d) for xi in distances])
+    errors = elevations - spline_points
 
 total_length = distances[-1]
 total_ascent = sum(max(elevations[i]-elevations[i-1],0) for i in range(1,n))
@@ -125,5 +134,13 @@ plt.plot(xx, gradient)
 plt.xlabel("Відстань (м)")
 plt.ylabel("Градієнт (%)")
 plt.title("Градієнт маршруту")
+plt.grid()
+plt.show()
+
+plt.figure(figsize=(10,6))
+plt.plot(distances, errors, 'o-', color='red')
+plt.xlabel("Відстань (м)")
+plt.ylabel("Похибка (м)")
+plt.title("Похибка кубічного сплайна")
 plt.grid()
 plt.show()
