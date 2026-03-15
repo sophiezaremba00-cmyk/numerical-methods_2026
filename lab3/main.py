@@ -2,10 +2,6 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-# -------------------------------
-# 1. Зчитування даних з CSV
-# -------------------------------
 def read_csv(filename):
     x = []
     y = []
@@ -19,10 +15,6 @@ def read_csv(filename):
 
     return np.array(x), np.array(y)
 
-
-# -------------------------------
-# 2. Формування матриці A
-# -------------------------------
 def form_matrix(x, m):
 
     n = len(x)
@@ -37,10 +29,6 @@ def form_matrix(x, m):
 
     return A
 
-
-# -------------------------------
-# Формування вектора b
-# -------------------------------
 def form_vector(x, y, m):
 
     n = len(x)
@@ -54,28 +42,20 @@ def form_vector(x, y, m):
 
     return b
 
-
-# -------------------------------
-# Метод Гауса з вибором головного
-# елемента по стовпцю
-# -------------------------------
 def gauss_solve(A, b):
 
     n = len(b)
 
     for k in range(n):
 
-        # пошук максимального елемента
         max_row = k
         for i in range(k+1, n):
             if abs(A[i][k]) > abs(A[max_row][k]):
                 max_row = i
 
-        # перестановка рядків
         A[[k, max_row]] = A[[max_row, k]]
         b[k], b[max_row] = b[max_row], b[k]
 
-        # прямий хід
         for i in range(k+1, n):
 
             factor = A[i][k] / A[k][k]
@@ -85,7 +65,6 @@ def gauss_solve(A, b):
 
             b[i] -= factor * b[k]
 
-    # зворотній хід
     x = np.zeros(n)
 
     for i in range(n-1, -1, -1):
@@ -98,10 +77,6 @@ def gauss_solve(A, b):
 
     return x
 
-
-# -------------------------------
-# Обчислення полінома
-# -------------------------------
 def polynomial(x, coef):
 
     y = np.zeros_like(x, dtype=float)
@@ -111,17 +86,8 @@ def polynomial(x, coef):
 
     return y
 
-
-# -------------------------------
-# Дисперсія
-# -------------------------------
 def variance(y_true, y_approx):
     return np.mean((y_true - y_approx)**2)
-
-
-# -------------------------------
-# Основна програма
-# -------------------------------
 
 x = np.array([
 1,2,3,4,5,6,7,8,9,10,11,12,
@@ -154,23 +120,14 @@ for m in range(1, max_degree+1):
 
     print(f"Степінь {m} -> дисперсія = {var:.4f}")
 
-# оптимальний степінь
 optimal_m = np.argmin(variances) + 1
 
 print("\nОптимальний степінь полінома:", optimal_m)
 
 coef = coefs[optimal_m-1]
 
-
-# -------------------------------
-# Апроксимація
-# -------------------------------
 y_approx = polynomial(x, coef)
 
-
-# -------------------------------
-# Прогноз на 3 місяці
-# -------------------------------
 x_future = np.array([25, 26, 27])
 y_future = polynomial(x_future, coef)
 
@@ -178,16 +135,8 @@ print("\nПрогноз температур:")
 for i in range(3):
     print(f"Місяць {x_future[i]} -> {y_future[i]:.2f} °C")
 
-
-# -------------------------------
-# Похибка
-# -------------------------------
 error = y - y_approx
 
-
-# -------------------------------
-# Графік даних і апроксимації
-# -------------------------------
 plt.figure()
 
 plt.scatter(x, y, label="Фактичні дані")
@@ -200,10 +149,6 @@ plt.title("Апроксимація температур")
 
 plt.show()
 
-
-# -------------------------------
-# Графік похибки
-# -------------------------------
 plt.figure()
 
 plt.plot(x, error, marker='o')
@@ -215,10 +160,6 @@ plt.title("Похибка апроксимації")
 
 plt.show()
 
-
-# -------------------------------
-# Графік дисперсії
-# -------------------------------
 plt.figure()
 
 degrees = range(1, max_degree+1)

@@ -137,10 +137,51 @@ plt.title("Градієнт маршруту")
 plt.grid()
 plt.show()
 
+def spline_curve(x_nodes, y_nodes, x_dense):
+    a,b,c,d = cubic_spline(x_nodes, y_nodes)
+    y_dense = np.zeros_like(x_dense)
+
+    for i in range(len(a)):
+        mask = (x_dense >= x_nodes[i]) & (x_dense <= x_nodes[i+1])
+        dx = x_dense[mask] - x_nodes[i]
+        y_dense[mask] = a[i] + b[i]*dx + c[i]*dx**2 + d[i]*dx**3
+
+    return y_dense
+
+xx = np.linspace(distances[0], distances[-1], 2000)
+
+ref_x = distances[:20]
+ref_y = elevations[:20]
+
+yy_ref = spline_curve(ref_x, ref_y, xx)
+
+idx10 = np.linspace(0,19,10,dtype=int)
+x10 = distances[idx10]
+y10 = elevations[idx10]
+
+yy10 = spline_curve(x10,y10,xx)
+
+idx15 = np.linspace(0,19,15,dtype=int)
+x15 = distances[idx15]
+y15 = elevations[idx15]
+
+yy15 = spline_curve(x15,y15,xx)
+
+error10 = np.abs(yy10 - yy_ref)
+error15 = np.abs(yy15 - yy_ref)
+
 plt.figure(figsize=(10,6))
-plt.plot(distances, errors, 'o-', color='red')
+
+plt.plot(xx, error10, color='blue', label="Похибка (10 вузлів)")
+plt.plot(xx, error15, color='green', label="Похибка (15 вузлів)")
+
+plt.fill_between(xx, error10, alpha=0.2, color='red')
+plt.fill_between(xx, error15, alpha=0.2, color='green')
+
 plt.xlabel("Відстань (м)")
-plt.ylabel("Похибка (м)")
-plt.title("Похибка кубічного сплайна")
+plt.ylabel("Абсолютна похибка (м)")
+plt.title("Графік похибки інтерполяції (відносно 20 вузлів)")
+plt.legend()
 plt.grid()
+
 plt.show()
