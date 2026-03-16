@@ -99,7 +99,7 @@ y = np.array([
 -10,3,7,13,19,20,22,21,18,15,10,3
 ])
 
-max_degree = 4
+max_degree = 6
 
 variances = []
 coefs = []
