@@ -4,14 +4,9 @@ import matplotlib.pyplot as plt
 N = 100
 EPSILON = 1e-14
 
-
-# =========================
-# СТАБІЛЬНА МАТРИЦЯ
-# =========================
 def generate_matrix(n):
     A = [[random.uniform(-1, 1) for _ in range(n)] for _ in range(n)]
 
-    # діагональне переважання
     for i in range(n):
         A[i][i] += n
 
@@ -38,10 +33,6 @@ def read_vector(filename):
     with open(filename, "r") as f:
         return list(map(float, f.readline().split()))
 
-
-# =========================
-# ОПЕРАЦІЇ
-# =========================
 def matrix_vector_mult(A, x):
     return [sum(A[i][j] * x[j] for j in range(len(A))) for i in range(len(A))]
 
@@ -49,10 +40,6 @@ def matrix_vector_mult(A, x):
 def vector_norm(v):
     return max(abs(x) for x in v)
 
-
-# =========================
-# LU
-# =========================
 def lu_decomposition(A):
     n = len(A)
     L = [[0.0] * n for _ in range(n)]
@@ -75,10 +62,6 @@ def lu_decomposition(A):
 
     return L, U
 
-
-# =========================
-# РОЗВ'ЯЗАННЯ
-# =========================
 def forward_substitution(L, B):
     Z = []
     for i in range(len(L)):
@@ -99,22 +82,13 @@ def backward_substitution(U, Z):
 def solve_lu(L, U, B):
     return backward_substitution(U, forward_substitution(L, B))
 
-
-# =========================
-# ПОХИБКА
-# =========================
 def compute_error(A, X, B):
     return max(abs(sum(A[i][j] * X[j] for j in range(len(A))) - B[i]) for i in range(len(A)))
 
-
-# =========================
-# ІТЕРАЦІЙНЕ УТОЧНЕННЯ (ІДЕАЛЬНЕ)
-# =========================
 def iterative_refinement(A, L, U, B, X0):
     X = X0[:]
     MAX_ITERS = 10
 
-    # 🔥 початкова похибка (ітерація 0)
     AX = matrix_vector_mult(A, X)
     R = [B[i] - AX[i] for i in range(len(B))]
 
@@ -129,7 +103,6 @@ def iterative_refinement(A, L, U, B, X0):
 
         delta_history.append(delta_norm)
 
-        # оновлення
         X = [X[i] + delta_X[i] for i in range(len(X))]
 
         AX = matrix_vector_mult(A, X)
@@ -140,16 +113,11 @@ def iterative_refinement(A, L, U, B, X0):
 
         iterations += 1
 
-        # 🔥 правильна умова зупинки
         if delta_norm <= EPSILON and residual_norm <= EPSILON:
             break
 
     return X, iterations, error_history, delta_history
 
-
-# =========================
-# MAIN
-# =========================
 def main():
     # генерація
     A = generate_matrix(N)
@@ -159,32 +127,23 @@ def main():
     B = matrix_vector_mult(A, X_true)
     write_vector("B.txt", B)
 
-    # зчитування
     A = read_matrix("A.txt")
     B = read_vector("B.txt")
 
-    # LU
     L, U = lu_decomposition(A)
 
-    # розв’язок
     X = solve_lu(L, U, B)
 
-    # похибка ДО
     error_before = compute_error(A, X, B)
 
-    # уточнення
     X_refined, iters, err_hist, delta_hist = iterative_refinement(A, L, U, B, X)
 
-    # після
     error_after = compute_error(A, X_refined, B)
 
     print("Похибка ДО:", error_before)
     print("Похибка ПІСЛЯ:", error_after)
     print("Ітерацій:", iters)
 
-    # =========================
-    # ГРАФІКИ
-    # =========================
     plt.figure()
     plt.plot(err_hist, marker='o')
     plt.yscale("log")
@@ -196,7 +155,7 @@ def main():
     plt.figure()
     plt.plot(delta_hist, marker='o')
     plt.yscale("log")
-    plt.title("Падіння ||Δх||")
+    plt.title("Падіння ||ΔX||")
     plt.xlabel("Ітерація")
     plt.ylabel("Норма")
     plt.grid()
