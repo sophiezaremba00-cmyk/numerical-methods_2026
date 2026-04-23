@@ -196,7 +196,7 @@ def main():
     plt.figure()
     plt.plot(delta_hist, marker='o')
     plt.yscale("log")
-    plt.title("Падіння ||ΔX||")
+    plt.title("Падіння ||Δх||")
     plt.xlabel("Ітерація")
     plt.ylabel("Норма")
     plt.grid()
