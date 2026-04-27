@@ -119,7 +119,7 @@ def iterative_refinement(A, L, U, B, X0):
     return X, iterations, error_history, delta_history
 
 def main():
-    # генерація
+
     A = generate_matrix(N)
     write_matrix("A.txt", A)
 

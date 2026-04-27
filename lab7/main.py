@@ -124,7 +124,6 @@ def main():
     x_true = [2.5] * n
     b = mat_vec_mult(A, x_true)
 
-    # 🔽 ВИВЕДЕННЯ
     print_matrix(A, limit=5)
     print_vector(x_true, "x_true")
     print_vector(b, "b")
