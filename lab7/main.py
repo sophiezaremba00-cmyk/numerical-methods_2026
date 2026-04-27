@@ -27,6 +27,7 @@ def residual(A, x, b):
     Ax = mat_vec_mult(A, x)
     return vector_norm([Ax[i] - b[i] for i in range(len(A))])
 
+
 def simple_iteration(A, b, x0, eps, x_true):
     n = len(A)
     x = x0[:]
@@ -52,6 +53,7 @@ def simple_iteration(A, b, x0, eps, x_true):
 
     return x, 10000, errors
 
+
 def jacobi(A, b, x0, eps, x_true):
     n = len(A)
     x = x0[:]
@@ -75,6 +77,7 @@ def jacobi(A, b, x0, eps, x_true):
         x = x_new
 
     return x, 10000, errors
+
 
 def gauss_seidel(A, b, x0, eps, x_true):
     n = len(A)
@@ -101,6 +104,18 @@ def gauss_seidel(A, b, x0, eps, x_true):
 
     return x, 10000, errors
 
+
+def print_matrix(A, limit=5):
+    print(f"Матриця A (перші {limit}x{limit} елементів):")
+    for row in A[:limit]:
+        print(["{:.3f}".format(x) for x in row[:limit]])
+
+
+def print_vector(v, name, limit=10):
+    print(f"\nВектор {name} (перші {limit} елементів):")
+    print(["{:.3f}".format(x) for x in v[:limit]])
+
+
 def main():
     n = 100
     eps = 1e-14
@@ -109,13 +124,18 @@ def main():
     x_true = [2.5] * n
     b = mat_vec_mult(A, x_true)
 
+    # 🔽 ВИВЕДЕННЯ
+    print_matrix(A, limit=5)
+    print_vector(x_true, "x_true")
+    print_vector(b, "b")
+
     x0 = [1.0] * n
 
     x_si, it_si, err_si = simple_iteration(A, b, x0, eps, x_true)
     x_j, it_j, err_j = jacobi(A, b, x0, eps, x_true)
     x_gs, it_gs, err_gs = gauss_seidel(A, b, x0, eps, x_true)
 
-    print("Проста ітерація:", it_si, "ітерацій")
+    print("\nПроста ітерація:", it_si, "ітерацій")
     print("Похибка:", vector_norm([x_si[i] - 2.5 for i in range(n)]))
 
     print("\nЯкобі:", it_j, "ітерацій")
